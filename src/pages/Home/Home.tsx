@@ -11,7 +11,6 @@ const Home = () => {
     axios
       .get("https://disease.sh/v3/covid-19/countries")
       .then(function (response: any) {
-        console.log(response.data);
         setCovidCases(response.data);
         return response.data;
       })
@@ -27,7 +26,7 @@ const Home = () => {
     <div className="container" id="props-basic">
       <h1>World Covid Map</h1>
       {covidCases.length > 0 && <WorldMap data={covidCases} />}
-      <LineChart width={500} height={500} />
+      {/* <LineChart width={800} height={500} /> */}
     </div>
   );
 };

@@ -1,41 +1,49 @@
 import React, { memo, useEffect, useState } from "react";
 import * as d3 from "d3";
-import { svg } from "d3";
+
 type Props = {
   width: number;
   height: number;
 };
-const LineChart: React.FC<Props> = ({ width, height }) => {
-  let csvURL =
-    "https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv";
 
+const LineChart: React.FC<Props> = ({ width, height }) => {
+  let URL = "https://disease.sh/v3/covid-19/historical/all?lastdays=all";
+  const [hoveredData, setHoveredData] = useState(null);
   const [data, setData] = useState([]);
 
   useEffect(() => {
     if (data.length > 0) {
-      d3.select("svg").remove();
+      d3.select("#time_series").select("svg").remove();
       drawChart();
     } else {
       getURLData();
     }
   }, [data]);
 
-  // gets csv data from a random csv I found
-  // ex. [{date: '2021-12-12', value: 1000}]
+  const formatDate = (dateString: string) => {
+    const dateParts = dateString.split("/");
+    const year = parseInt(dateParts[2]) + 2000; // add 2000 to convert from yy to yyyy
+    const month = parseInt(dateParts[0]) - 1; // subtract 1 to convert from 1-indexed to 0-indexed
+    const day = parseInt(dateParts[1]);
+    const dateObject = new Date(year, month, day);
+    const formattedDate = dateObject.toISOString().slice(0, 10);
+
+    return formattedDate;
+  };
+
   const getURLData = async () => {
     let tempData: any[] = [];
-    await d3.csv(
-      csvURL,
-      // @ts-ignore
-      () => {},
-      function (d: any) {
-        //console.log(d);
-        tempData.push({
-          date: d3.timeParse("%Y-%m-%d")(d.date),
-          value: parseFloat(d.value),
-        });
-      }
-    );
+    await d3.json(URL).then((response: any) => {
+      console.log(
+        Object.keys(response.cases).forEach((key) => {
+          const formattedDate = formatDate(key);
+          tempData.push({
+            date: d3.timeParse("%Y-%m-%d")(formattedDate),
+            value: response.cases[key],
+          });
+        })
+      );
+    });
     // @ts-ignore
     setData(tempData);
   };
@@ -54,6 +62,11 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
       .attr("transform", `translate(${margin.left},${margin.top})`);
     svg.exit();
 
+    const tooltip = d3
+      .select("#container")
+      .append("div")
+      .attr("class", "tooltip");
+
     // Add X axis --> it is a date format
     var x = d3
       .scaleTime()
@@ -64,7 +77,7 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
     svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x).tickFormat(d3.timeFormat("%b %Y")));
 
     // Add Y axis
     var y = d3
@@ -72,11 +85,11 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
       .domain([
         0,
         d3.max(data, function (d: any): any {
-          return +d.value;
+          return d.value;
         }),
       ])
       .range([height, 0]);
-    svg.append("g").call(d3.axisLeft(y));
+    svg.append("g").call(d3.axisLeft(y).tickFormat(d3.format(".2s")));
 
     // set line coordinates
     const line = d3
@@ -100,10 +113,10 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
 
   return (
     <div>
-      <h4> Time Series - http CSV response</h4>
-      <div id="time_series" />
+      <h4> Time Series - Covid Cases</h4>
+      {data && <div id="time_series" />}
     </div>
   );
 };
 
-export default LineChart;
+export default memo(LineChart);
