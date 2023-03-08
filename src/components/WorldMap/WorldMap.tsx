@@ -5,7 +5,7 @@ import {
   ZoomableGroup,
 } from "react-simple-maps";
 import { Tooltip } from "react-tooltip";
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 import "./WorldMap.scss";
 import ToolTipContainer from "../ToolTipContainer/ToolTipContainer";
 import HeatMapLabel from "../HeatMapLabel/HeatMapLabel";

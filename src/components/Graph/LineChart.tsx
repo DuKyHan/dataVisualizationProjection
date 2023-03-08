@@ -1,5 +1,7 @@
 import React, { memo, useEffect, useState } from "react";
 import * as d3 from "d3";
+import { getCountryData } from "../../reduxState/lineChartSlice";
+import { useAppDispatch, useAppSelector } from "../../ultils/store";
 
 type Props = {
   width: number;
@@ -7,18 +9,19 @@ type Props = {
 };
 
 const LineChart: React.FC<Props> = ({ width, height }) => {
-  let URL = "https://disease.sh/v3/covid-19/historical/all?lastdays=all";
-  const [hoveredData, setHoveredData] = useState(null);
+  const { selectedCountry, isLoading } = useAppSelector(
+    (state) => state.lineChartState
+  );
   const [data, setData] = useState([]);
-
+  const dispatch = useAppDispatch();
   useEffect(() => {
-    if (data.length > 0) {
-      d3.select("#time_series").select("svg").remove();
-      drawChart();
-    } else {
-      getURLData();
+    if (selectedCountry) {
+      getURLData(selectedCountry).then((data: any) => {
+        d3.select("#time_series").select("svg").remove();
+        drawChart(data);
+      });
     }
-  }, [data]);
+  }, [selectedCountry]);
 
   const formatDate = (dateString: string) => {
     const dateParts = dateString.split("/");
@@ -27,28 +30,30 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
     const day = parseInt(dateParts[1]);
     const dateObject = new Date(year, month, day);
     const formattedDate = dateObject.toISOString().slice(0, 10);
-
     return formattedDate;
   };
 
-  const getURLData = async () => {
+  const getURLData = async (countryCode: string) => {
     let tempData: any[] = [];
-    await d3.json(URL).then((response: any) => {
-      console.log(
+
+    await dispatch(getCountryData({ countryCode: countryCode }))
+      .unwrap()
+      .then((response) => {
         Object.keys(response.cases).forEach((key) => {
           const formattedDate = formatDate(key);
           tempData.push({
             date: d3.timeParse("%Y-%m-%d")(formattedDate),
             value: response.cases[key],
+            deaths: response.deaths[key],
           });
-        })
-      );
-    });
+        });
+      });
     // @ts-ignore
     setData(tempData);
+    return tempData;
   };
 
-  const drawChart = () => {
+  const drawChart = (data: any) => {
     // establish margins
     const margin = { top: 10, right: 50, bottom: 50, left: 50 };
 
@@ -56,16 +61,12 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
     const svg = d3
       .select("#time_series")
       .append("svg")
+
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
     svg.exit();
-
-    const tooltip = d3
-      .select("#container")
-      .append("div")
-      .attr("class", "tooltip");
 
     // Add X axis --> it is a date format
     var x = d3
@@ -82,6 +83,7 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
     // Add Y axis
     var y = d3
       .scaleLinear()
+      //@ts-ignore
       .domain([
         0,
         d3.max(data, function (d: any): any {
@@ -92,13 +94,22 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
     svg.append("g").call(d3.axisLeft(y).tickFormat(d3.format(".2s")));
 
     // set line coordinates
-    const line = d3
+    const lineCase = d3
       .line()
       .x(function (d: any) {
         return x(d.date);
       })
       .y(function (d: any) {
         return y(d.value);
+      });
+
+    const lineDeath = d3
+      .line()
+      .x(function (d: any) {
+        return x(d.date);
+      })
+      .y(function (d: any) {
+        return y(d.deaths);
       });
 
     // Add the line
@@ -108,9 +119,20 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
       .attr("fill", "none")
       .attr("stroke", "steelblue")
       .attr("stroke-width", 1.5)
-      .attr("d", line);
+      .attr("d", lineCase);
+
+    svg
+      .append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 1.5)
+      .attr("d", lineDeath);
   };
 
+  if (isLoading === true) {
+    return <div>Loading...</div>;
+  }
   return (
     <div>
       <h4> Time Series - Covid Cases</h4>
@@ -119,4 +141,4 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
   );
 };
 
-export default memo(LineChart);
+export default LineChart;

@@ -4,6 +4,7 @@ import "react-tooltip/dist/react-tooltip.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import LineChart from "../../components/Graph/LineChart";
+import DropList from "../../components/DropList/DropList";
 const Home = () => {
   const [covidCases, setCovidCases] = useState<Array<Object> | []>([]);
 
@@ -26,7 +27,10 @@ const Home = () => {
     <div className="container" id="props-basic">
       <h1>World Covid Map</h1>
       {covidCases.length > 0 && <WorldMap data={covidCases} />}
-      {/* <LineChart width={800} height={500} /> */}
+      <section>
+        <DropList />
+        <LineChart width={800} height={500} />
+      </section>
     </div>
   );
 };
