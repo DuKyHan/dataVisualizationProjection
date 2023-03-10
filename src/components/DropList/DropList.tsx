@@ -27,9 +27,7 @@ export default function DropList() {
     <>
       {countries && (
         <select name="country" onChange={handleOnChange}>
-          <option value="" selected>
-            All
-          </option>
+          <option>Select Country</option>
           {countries.map((country: Country) => (
             <option
               value={country["country-code"]}
