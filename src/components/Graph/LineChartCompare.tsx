@@ -108,6 +108,7 @@ const LineChartCompare: React.FC<Props> = ({ width, height }) => {
   };
   return (
     <div>
+      <h4> Time Series - Covid Cases Between Countries</h4>
       <div id="time-series"></div>
     </div>
   );

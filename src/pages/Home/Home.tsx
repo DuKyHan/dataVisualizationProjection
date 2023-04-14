@@ -33,13 +33,20 @@ const Home = () => {
     <div className="container" id="props-basic">
       <h1>World Covid Map</h1>
       {covidCases.length > 0 && <WorldMap data={covidCases} />}
-      <section>
-        <DropList />
-        <LineChartCountries width={800} height={500} />
-        <DropListCompare />
-        <LineChartCompare width={800} height={500} />
-        <BarChart width={800} height={500} />
+      <section className="linechart_container">
+        <div>
+          <DropList />
+          <LineChartCountries width={800} height={500} />
+        </div>
+        <div>
+          <DropList />
+          <LineChartCountries width={800} height={500} />
+        </div>
+
+        {/* <DropListCompare />
+        <LineChartCompare width={800} height={500} /> */}
       </section>
+      {/* <BarChart width={800} height={500} /> */}
     </div>
   );
 };

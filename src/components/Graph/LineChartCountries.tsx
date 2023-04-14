@@ -28,8 +28,7 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
 
   const getURLData = async (countryCode: string) => {
     let tempData: any[] = [];
-
-    await dispatch(getCountryData({ countryCode: countryCode }))
+    await dispatch(getCountryData({ countryCode }))
       .unwrap()
       .then((response) => {
         Object.keys(response.cases).forEach((key) => {
@@ -51,6 +50,7 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
     const margin = { top: 20, right: 120, bottom: 50, left: 50 };
 
     // create the chart area
+    d3.select("#time_series").style("position", "relative");
     const svg = d3
       .select("#time_series")
       .append("svg")
@@ -160,12 +160,41 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
       .attr("stroke", "red")
       .attr("stroke-width", 1.5)
       .attr("d", lineDeath);
+
+    const tooltip = d3.select("#tooltip").attr("class", "tooltip");
+
+    svg
+      .selectAll(".dot")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "dot")
+      .attr("cx", (d: any) => x(d.date))
+      .attr("cy", (d: any) => y(d.cases))
+      .attr("r", 1.5)
+      .attr("fill", "steelblue")
+      .on("mouseover", (event, d: any) => {
+        tooltip.html(`<p>${d.date}: ${d.cases} cases</p>`);
+        tooltip.style("visibility", "visible");
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("top", event.pageY - 10 + "px")
+          .style("left", event.pageX + 10 + "px");
+      })
+      .on("mouseout", () => {
+        tooltip.style("visibility", "hidden");
+      });
   };
 
   return (
     <div>
-      <h4> Time Series - Covid Cases</h4>
-      {!isLoading && <div id="time_series" />}
+      <h4> Time Series - Covid Cases and Deaths</h4>
+      {!isLoading && (
+        <div id="time_series">
+          <div id="tooltip"></div>
+        </div>
+      )}
     </div>
   );
 };
