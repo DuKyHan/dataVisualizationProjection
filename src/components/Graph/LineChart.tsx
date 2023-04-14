@@ -87,6 +87,7 @@ const LineChart: React.FC<Props> = ({ width, height }) => {
       .y(function (d: any) {
         return y(d.value);
       });
+      
 
     // Add the line
     svg

@@ -44,6 +44,7 @@ const WorldMap: React.FC<Props> = ({ data }) => {
                   const covidCase = data.find(
                     (element: any) => element.countryInfo.iso3 === geo.id
                   );
+                  
                   // @ts-ignore
                   return (
                     <>
