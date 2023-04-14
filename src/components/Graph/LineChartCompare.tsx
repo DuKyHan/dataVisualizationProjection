@@ -12,7 +12,7 @@ type Props = {
 const LineChartCompare: React.FC<Props> = ({ width, height }) => {
   const [data, setData] = useState([]);
   const { seletedCountries, payloadCompare } = useAppSelector(
-    (state) => state.lineChartState
+    (state: any) => state.lineChartState
   );
   useEffect(() => {
     if (seletedCountries.length > 0) {

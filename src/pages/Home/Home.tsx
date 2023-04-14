@@ -3,19 +3,17 @@ import "./Home.scss";
 import "react-tooltip/dist/react-tooltip.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
-<<<<<<< HEAD
-import LineChart from "../../components/Graph/LineChart";
-import BarChart from "../../components/Graph/BarChart";
-import Chart from "../../components/Graph/chart";
-=======
+
 import LineChartCountries from "../../components/Graph/LineChartCountries";
 import DropList from "../../components/DropList/DropList";
 import LineChartCompare from "../../components/Graph/LineChartCompare";
 import { useAppDispatch } from "../../ultils/store";
 import { getCountriesData } from "../../reduxState/lineChartSlice";
 import DropListCompare from "../../components/DropList/DropListCompare";
+import LineChart from "../../components/Graph/LineChart";
 import BarChart from "../../components/Graph/BarChart";
->>>>>>> c1aa8694de30eecd379d96e2784c041c713d106e
+import Chart from "../../components/Graph/chart";
+
 const Home = () => {
   const [covidCases, setCovidCases] = useState<Array<Object> | []>([]);
   const dispatch = useAppDispatch();
@@ -38,12 +36,7 @@ const Home = () => {
   return (
     <div>
       <h1>World Covid Map</h1>
-<<<<<<< HEAD
-      {/* {covidCases.length > 0 && <WorldMap data={covidCases} />}
-      <LineChart width={500} height={500} /> */}
-      <BarChart  width={1000} height={500} data={covidCases} />
-      <Chart  width={900} height={400} />
-=======
+
       {covidCases.length > 0 && <WorldMap data={covidCases} />}
       <section className="linechart_container">
         <div>
@@ -57,9 +50,11 @@ const Home = () => {
 
         {/* <DropListCompare />
         <LineChartCompare width={800} height={500} /> */}
+        <BarChart  width={1000} height={500} data={covidCases} />
+      <Chart  width={900} height={400} />
       </section>
       {/* <BarChart width={800} height={500} /> */}
->>>>>>> c1aa8694de30eecd379d96e2784c041c713d106e
+
     </div>
   );
 };

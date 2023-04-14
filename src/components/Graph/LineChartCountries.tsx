@@ -13,7 +13,7 @@ type Props = {
 const marginText = 15;
 const LineChartCountries: React.FC<Props> = ({ width, height }) => {
   const { selectedCountry, isLoading } = useAppSelector(
-    (state) => state.lineChartState
+    (state: any) => state.lineChartState
   );
   const [data, setData] = useState([]);
   const dispatch = useAppDispatch();
@@ -30,7 +30,7 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
     let tempData: any[] = [];
     await dispatch(getCountryData({ countryCode }))
       .unwrap()
-      .then((response) => {
+      .then((response: any) => {
         Object.keys(response.cases).forEach((key) => {
           const formattedDate = formatDate(key);
           tempData.push({
