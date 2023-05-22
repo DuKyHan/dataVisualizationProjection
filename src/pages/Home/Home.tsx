@@ -13,6 +13,7 @@ import DropListCompare from "../../components/DropList/DropListCompare";
 import LineChart from "../../components/Graph/LineChart";
 import BarChart from "../../components/Graph/BarChart";
 import Chart from "../../components/Graph/chart";
+import TestChart from "../../components/Graph/TestChart";
 
 const Home = () => {
   const [covidCases, setCovidCases] = useState<Array<Object> | []>([]);
@@ -51,6 +52,7 @@ const Home = () => {
         {/* <DropListCompare />
         <LineChartCompare width={800} height={500} /> */}
         <BarChart  width={1000} height={500} data={covidCases} />
+        {/* <TestChart width={1000} height={500} data={covidCases} /> */}
       <Chart  width={900} height={400} />
       </section>
       {/* <BarChart width={800} height={500} /> */}

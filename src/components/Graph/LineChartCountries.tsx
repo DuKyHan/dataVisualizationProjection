@@ -28,6 +28,7 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
 
   const getURLData = async (countryCode: string) => {
     let tempData: any[] = [];
+    //@ts-ignore
     await dispatch(getCountryData({ countryCode }))
       .unwrap()
       .then((response: any) => {

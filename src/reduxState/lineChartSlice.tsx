@@ -38,7 +38,7 @@ export const getCountryData = createAsyncThunk(
   }
 );
 
-export const getCountriesData = createAsyncThunk(
+export const getCountriesData: any = createAsyncThunk(
   "api/getCountriesData",
   async (thunkAPI) => {
     const response = await axios.get(`data/historical_data.json`);

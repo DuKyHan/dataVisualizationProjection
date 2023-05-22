@@ -2,21 +2,19 @@ import React, { memo, useEffect, useState } from "react";
 import * as d3 from "d3";
 import axios from "axios";
 import { MultiSelect } from "react-multi-select-component";
-import ToolTipContainer from "../ToolTipContainer/ToolTipContainer";
-import { Tooltip } from "react-tooltip";
+
 type Props = {
   width: number;
   height: number;
   data: Array<Object>;
 };
 
-const BarChart: React.FC<Props> = ({ width, height, data }) => {
+const TestChart: React.FC<Props> = ({ width, height, data }) => {
   const [dataset, setData] = useState<any[]>([]);
+  const [dataUpdate, setDataUpdate] = useState<any[]>([]);
   const mydata = data;
   const [choice, setChoice] = useState<any[]>([]);
   const [countries, setCountries] = useState([]);
-  const [content, setTooltipContent] = useState("");
-  
   useEffect(() => {
     if (countries.length > 0) {
       filldata(mydata);
@@ -25,7 +23,13 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
     } else {
       getCountry();
     }
-  }, [countries, choice]);
+  }, [countries]);
+  useEffect(() => {
+    updatedata(mydata);
+    d3.select("#bar-chart").select("svg").remove();
+    drawChart();
+    console.log(dataset)
+  }, []);
 
   const filldata = (items: any) => {
     setData([]);
@@ -34,6 +38,19 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
         if (item.country === d.value) {
           if (!dataset.includes(item)) {
             dataset.push(item);
+          }
+        }
+      });
+    });
+  };
+  const updatedata = (items: any) => {
+    setData(dataUpdate);
+    setDataUpdate([]);
+    items.map((item: any) => {
+      choice.map((d) => {
+        if (item.country === d.value) {
+          if (!dataUpdate.includes(item)) {
+            dataUpdate.push(item);
           }
         }
       });
@@ -93,49 +110,18 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
     svg
       .append("g")
       .attr("class", "x-axis")
-      .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
 
       .attr("transform", "translate(0," + height + ")")
       .call(d3.axisBottom(x));
-    svg
-      .append("g")
-      .attr("class", "y-axis")
-      .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
-      .call(d3.axisLeft(y).ticks(17));
-      var opacityrange = d3
-      .scaleLinear()
-      .domain([0, Math.max(...dataset.map(({ cases }) => cases))])
-      .range([0.5, 1]);
-      // const fillColor = (covidCasePerMillion: number): string => {
-      //   if (covidCasePerMillion && covidCasePerMillion > 300000) return "#710909";
-      //   if (300000 >= covidCasePerMillion && covidCasePerMillion > 200000)
-      //     return "#ff0000";
-      //   if (200000 >= covidCasePerMillion && covidCasePerMillion > 150000)
-      //     return "#a14107";
-      //   if (150000 >= covidCasePerMillion && covidCasePerMillion > 100000)
-      //     return "#ff6e12";
-      //   if (100000 >= covidCasePerMillion && covidCasePerMillion > 50000)
-      //     return "#fef769";
-      //   if (50000 >= covidCasePerMillion) return "#f7e9b5";
-    
-      //   return "#AAAAAA";
-      // };
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+    //draw bar
+
     svg
       .selectAll("rect")
       .data(dataset)
       .enter()
       .append("rect")
-      .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
-      .duration(1000)
+
       // @ts-ignore
       .attr("x", function (d, i) {
         // @ts-ignore
@@ -148,21 +134,46 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
       .attr("height", function (d) {
         return yScale(d.cases);
       })
-      .attr("fill","#55165e")
-      .style("opacity", function (d) {
-        return opacityrange(d.cases);
-      })
-    svg
-      .selectAll("rect")
-      .on("mouseover", (event, d) => {
+
+      .attr("fill", (d) => "blue");
+    //change and update
+    d3.select(".select").on("change", function () {
+      // @ts-ignore
+      xScale.domain(d3.range(dataUpdate.length));
+      yScale.domain([
+        d3.min(dataUpdate, (d) => d.cases),
+        d3.max(dataUpdate, (d) => d.cases),
+      ]);
+      // @ts-ignore
+      svg.select(".x-axis").transition().duration(1000).call(d3.axisBottom(x));
+
+      // update Y axis
+      // @ts-ignore
+      svg.select(".y-axis").transition().duration(1000).call(d3.axisLeft(y));
+      //update bar
+      let barsUpdate = svg.selectAll("rect").data(dataUpdate);
+
+      barsUpdate
+        .enter()
+        .append("rect")
         // @ts-ignore
-        // prettier-ignore
-        setTooltipContent(<ToolTipContainer cases={d.cases} country={d.country} todayCases={d.todayCases} deaths={d.deaths} flag={d.countryInfo.flag} casesPerOneMillion={d.casesPerOneMillion}/>)
-      })
-      .on("mouseleave", (d) => {
-        setTooltipContent("")
-      });
-    
+        .transition()
+        .duration(1000)
+        // @ts-ignore
+        .attr("x", function (d, i) {
+          // @ts-ignore
+          return xScale(i);
+        })
+        .attr("y", function (d) {
+          return height - yScale(d.cases);
+        })
+        .attr("width", xScale.bandwidth())
+        .attr("height", function (d) {
+          return yScale(d.cases);
+        })
+        .attr("fill", (d) => "blue")
+        .attr("transform", `translate(10,0)`);
+    });
     svg
       .selectAll("text")
       .data(dataset)
@@ -185,7 +196,6 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
   };
   return (
     <div>
-      <Tooltip float anchorId="bar-chart" content={content} />
       <h3> Barchart</h3>
       <p>Choose list countries to display </p>
       <MultiSelect
@@ -201,4 +211,4 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
   );
 };
 
-export default BarChart;
+export default TestChart;
