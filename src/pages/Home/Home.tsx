@@ -11,9 +11,11 @@ import { useAppDispatch } from "../../ultils/store";
 import { getCountriesData } from "../../reduxState/lineChartSlice";
 import DropListCompare from "../../components/DropList/DropListCompare";
 import LineChart from "../../components/Graph/LineChart";
-import BarChart from "../../components/Graph/BarChart";
+
 import Chart from "../../components/Graph/chart";
 import TestChart from "../../components/Graph/TestChart";
+import BarChart from "../../components/Graph/BarChart";
+import BarChartTest from "../../components/Graph/BarChartTest";
 
 const Home = () => {
   const [covidCases, setCovidCases] = useState<Array<Object> | []>([]);
@@ -44,19 +46,13 @@ const Home = () => {
           <DropList />
           <LineChartCountries width={800} height={500} />
         </div>
-        <div>
-          <DropList />
-          <LineChartCountries width={800} height={500} />
-        </div>
 
         {/* <DropListCompare />
         <LineChartCompare width={800} height={500} /> */}
-        <BarChart  width={1000} height={500} data={covidCases} />
         {/* <TestChart width={1000} height={500} data={covidCases} /> */}
-      <Chart  width={900} height={400} />
+        {covidCases.length > 0 && <BarChartTest dataset={covidCases} />}
       </section>
       {/* <BarChart width={800} height={500} /> */}
-
     </div>
   );
 };

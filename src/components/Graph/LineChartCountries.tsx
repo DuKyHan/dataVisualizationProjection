@@ -165,7 +165,30 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
     const tooltip = d3.select("#tooltip").attr("class", "tooltip");
 
     svg
-      .selectAll(".dot")
+      .selectAll(".dot1")
+      .data(data)
+      .enter()
+      .append("circle")
+      .attr("class", "dot")
+      .attr("cx", (d: any) => x(d.date))
+      .attr("cy", (d: any) => y(d.deaths))
+      .attr("r", 1.5)
+      .attr("fill", "red")
+      .on("mouseover", (event, d: any) => {
+        tooltip.html(`<p>${d.date}: ${d.deaths} deaths </p>`);
+        tooltip.style("visibility", "visible");
+      })
+      .on("mousemove", (event) => {
+        tooltip
+          .style("top", event.pageY - 10 + "px")
+          .style("left", event.pageX + 10 + "px");
+      })
+      .on("mouseout", () => {
+        tooltip.style("visibility", "hidden");
+      });
+
+    svg
+      .selectAll(".dot2")
       .data(data)
       .enter()
       .append("circle")
@@ -175,7 +198,7 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
       .attr("r", 1.5)
       .attr("fill", "steelblue")
       .on("mouseover", (event, d: any) => {
-        tooltip.html(`<p>${d.date}: ${d.cases} cases</p>`);
+        tooltip.html(`<p>${d.date}: ${d.cases} cases </p>`);
         tooltip.style("visibility", "visible");
       })
       .on("mousemove", (event) => {

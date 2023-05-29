@@ -16,7 +16,7 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
   const [choice, setChoice] = useState<any[]>([]);
   const [countries, setCountries] = useState([]);
   const [content, setTooltipContent] = useState("");
-  
+
   useEffect(() => {
     if (countries.length > 0) {
       filldata(mydata);
@@ -108,24 +108,10 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
         return i * 500;
       })
       .call(d3.axisLeft(y).ticks(17));
-      var opacityrange = d3
+    var opacityrange = d3
       .scaleLinear()
       .domain([0, Math.max(...dataset.map(({ cases }) => cases))])
       .range([0.5, 1]);
-      // const fillColor = (covidCasePerMillion: number): string => {
-      //   if (covidCasePerMillion && covidCasePerMillion > 300000) return "#710909";
-      //   if (300000 >= covidCasePerMillion && covidCasePerMillion > 200000)
-      //     return "#ff0000";
-      //   if (200000 >= covidCasePerMillion && covidCasePerMillion > 150000)
-      //     return "#a14107";
-      //   if (150000 >= covidCasePerMillion && covidCasePerMillion > 100000)
-      //     return "#ff6e12";
-      //   if (100000 >= covidCasePerMillion && covidCasePerMillion > 50000)
-      //     return "#fef769";
-      //   if (50000 >= covidCasePerMillion) return "#f7e9b5";
-    
-      //   return "#AAAAAA";
-      // };
     svg
       .selectAll("rect")
       .data(dataset)
@@ -148,10 +134,10 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
       .attr("height", function (d) {
         return yScale(d.cases);
       })
-      .attr("fill","#55165e")
+      .attr("fill", "#55165e")
       .style("opacity", function (d) {
         return opacityrange(d.cases);
-      })
+      });
     svg
       .selectAll("rect")
       .on("mouseover", (event, d) => {
@@ -160,9 +146,9 @@ const BarChart: React.FC<Props> = ({ width, height, data }) => {
         setTooltipContent(<ToolTipContainer cases={d.cases} country={d.country} todayCases={d.todayCases} deaths={d.deaths} flag={d.countryInfo.flag} casesPerOneMillion={d.casesPerOneMillion}/>)
       })
       .on("mouseleave", (d) => {
-        setTooltipContent("")
+        setTooltipContent("");
       });
-    
+
     svg
       .selectAll("text")
       .data(dataset)
