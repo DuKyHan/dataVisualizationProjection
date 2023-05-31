@@ -1,21 +1,14 @@
-import WorldMap from "../../components/WorldMap/WorldMap";
 import "./Home.scss";
 import "react-tooltip/dist/react-tooltip.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import LineChartCountries from "../../components/Graph/LineChartCountries";
-import DropList from "../../components/DropList/DropList";
-import LineChartCompare from "../../components/Graph/LineChartCompare";
 import { useAppDispatch } from "../../ultils/store";
 import { getCountriesData } from "../../reduxState/lineChartSlice";
-import DropListCompare from "../../components/DropList/DropListCompare";
-import LineChart from "../../components/Graph/LineChart";
 
-import Chart from "../../components/Graph/chart";
-import TestChart from "../../components/Graph/TestChart";
-import BarChart from "../../components/Graph/BarChart";
-import BarChartTest from "../../components/Graph/BarChartTest";
+import { Box, Container, Typography } from "@mui/material";
+import LineChartCountries from "../../components/Graph/LineChartCountries";
+import WorldMap from "../../components/WorldMap/WorldMap";
 
 const Home = () => {
   const [covidCases, setCovidCases] = useState<Array<Object> | []>([]);
@@ -25,6 +18,7 @@ const Home = () => {
       .get("https://disease.sh/v3/covid-19/countries")
       .then(function (response: any) {
         setCovidCases(response.data);
+        console.log(response.data);
         return response.data;
       })
       .catch(function (error: any) {
@@ -37,23 +31,35 @@ const Home = () => {
     dispatch(getCountriesData());
   }, []);
   return (
-    <div>
-      <h1>World Covid Map</h1>
-
-      {covidCases.length > 0 && <WorldMap data={covidCases} />}
-      <section className="linechart_container">
-        <div>
-          <DropList />
-          <LineChartCountries width={800} height={500} />
-        </div>
-
-        {/* <DropListCompare />
-        <LineChartCompare width={800} height={500} /> */}
-        {/* <TestChart width={1000} height={500} data={covidCases} /> */}
-        {covidCases.length > 0 && <BarChartTest dataset={covidCases} />}
-      </section>
+    <Container>
+      {/* <Grid container spacing={2}>
+        <Grid item xs={6} md={8} width={"1000px"}> */}
+      <Typography variant="h1" align="center">
+        World Covid Map
+      </Typography>
+      <Typography minWidth={1000}>
+        {covidCases.length > 0 && <WorldMap data={covidCases} />}
+        {/* </Grid> */}
+      </Typography>
+      <Typography>
+        <Typography align="center" variant="h5">
+          Total cases and deaths in each country
+        </Typography>
+        <Box width={1100} height={500}>
+          <Typography>
+            <LineChartCountries width={1000} height={500} />
+          </Typography>
+        </Box>
+        {/* <LineChartCountries width={800} height={500} /> */}
+      </Typography>
+      <Typography>
+        {/* <section className="linechart_container"> */}
+        {/* {covidCases.length > 0 && <BarChartTest dataset={covidCases} />} */}
+        {/* </section> */}
+      </Typography>
       {/* <BarChart width={800} height={500} /> */}
-    </div>
+      {/* </Grid> */}
+    </Container>
   );
 };
 

@@ -10,7 +10,7 @@ type Props = {
   height: number;
 };
 
-const marginText = 15;
+const marginText = 0;
 const LineChartCountries: React.FC<Props> = ({ width, height }) => {
   const { selectedCountry, isLoading } = useAppSelector(
     (state: any) => state.lineChartState
@@ -195,10 +195,10 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
       .attr("class", "dot")
       .attr("cx", (d: any) => x(d.date))
       .attr("cy", (d: any) => y(d.cases))
-      .attr("r", 1.5)
+      .attr("r", 2)
       .attr("fill", "steelblue")
       .on("mouseover", (event, d: any) => {
-        tooltip.html(`<p>${d.date}: ${d.cases} cases </p>`);
+        tooltip.html(`<p>${d.date}: ${d.cases} cases</p>`);
         tooltip.style("visibility", "visible");
       })
       .on("mousemove", (event) => {
@@ -212,14 +212,18 @@ const LineChartCountries: React.FC<Props> = ({ width, height }) => {
   };
 
   return (
-    <div>
-      <h4> Time Series - Covid Cases and Deaths</h4>
-      {!isLoading && (
-        <div id="time_series">
-          <div id="tooltip"></div>
-        </div>
-      )}
-    </div>
+    <>
+      <div>
+        {/* <h4> Total cases and deaths in each country</h4> */}
+        {!isLoading && (
+          <div id="time_series">
+            <div id="tooltip">
+              <p></p>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

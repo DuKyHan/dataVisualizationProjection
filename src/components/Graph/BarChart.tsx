@@ -1,190 +1,265 @@
-import React, { memo, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as d3 from "d3";
-import axios from "axios";
-import { MultiSelect } from "react-multi-select-component";
-import ToolTipContainer from "../ToolTipContainer/ToolTipContainer";
-import { Tooltip } from "react-tooltip";
+import "./BarChart.scss";
+import { element } from "prop-types";
+import { useAppSelector } from "../../ultils/store";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Button,
+} from "@mui/material";
 type Props = {
-  width: number;
-  height: number;
-  data: Array<Object>;
+  dataset: Array<Object>;
+  country: any;
+  onReset: any;
 };
 
-const BarChart: React.FC<Props> = ({ width, height, data }) => {
-  const [dataset, setData] = useState<any[]>([]);
-  const mydata = data;
-  const [choice, setChoice] = useState<any[]>([]);
-  const [countries, setCountries] = useState([]);
+const BarChartTest: React.FC<Props> = ({ dataset, country, onReset }) => {
+  const [data, setData] = useState([]);
+  const margin = { top: 10, right: 150, bottom: 30, left: 100 };
+  const width = 1200 - margin.left - margin.right;
+  const height = 400 - margin.top - margin.bottom + data.length + 10;
+  const [isCase, setIsCase] = useState(true);
+  const [isDeath, setIsDeath] = useState(false);
+  const [isAlphabetical, setIsAlphabetical] = useState(false);
+  const [isAscending, setIsAscending] = useState(false);
+  const [isDescending, setIsDescending] = useState(false);
   const [content, setTooltipContent] = useState("");
-
+  const { setSelectedCountry, isLoading } = useAppSelector(
+    (state: any) => state.lineChartState
+  );
   useEffect(() => {
-    if (countries.length > 0) {
-      filldata(mydata);
-      d3.select("#bar-chart").select("svg").remove();
-      drawChart();
-    } else {
-      getCountry();
+    if (country) {
+      updateData(country);
+      onReset("");
     }
-  }, [countries, choice]);
+    console.log(country);
+    d3.select("#bar_chart").select("svg").remove();
+    drawBarChart();
+  }, [data, isCase, isDeath, isAscending, isDescending, country]);
 
-  const filldata = (items: any) => {
-    setData([]);
-    items.map((item: any) => {
-      choice.map((d) => {
-        if (item.country === d.value) {
-          if (!dataset.includes(item)) {
-            dataset.push(item);
-          }
-        }
-      });
-    });
+  const updateData = (value: any) => {
+    const addedItem = dataset.find((element: any) => element.country === value);
+    console.log(addedItem);
+    //@ts-ignore
+    setData((prevState) => [...prevState, addedItem]);
   };
 
-  const getCountry = () => {
-    setCountries(
-      // @ts-ignore
-      data.map((d: any) => {
-        return { label: d.country, value: d.country };
-      })
-    );
+  const handleRemoveCountry = (country: any) => {
+    setData(data.filter((element: any) => element.country !== country));
   };
-
-  const drawChart = () => {
-    const margin = { top: 30, right: 50, bottom: 50, left: 80 };
-
-    var x = d3
-      .scaleBand()
-      .domain(
-        dataset.map((d) => {
-          return d.country;
-        })
-      )
-      .rangeRound([0, width]);
-
-    const xScale = d3
-      .scaleBand()
-      // @ts-ignore
-      .domain(d3.range(dataset.length))
-      .rangeRound([0, width])
-      .paddingInner(0.05);
-
-    const yScale = d3
-      .scaleLinear()
-      // @ts-ignore
-      .domain([
-        d3.min(dataset, (d) => d.cases),
-        d3.max(dataset, (d) => d.cases),
-      ])
-      .range([30, height]);
-
+  const drawBarChart = () => {
     const svg = d3
-      .select("#bar-chart")
+      .select("#bar_chart")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
       .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-    var y = d3
+    let x = d3
       .scaleLinear()
-      .domain([0, Math.max(...dataset.map(({ cases }) => cases))])
-      .range([height, 0]);
+      //@ts-ignore
+      .domain([
+        0,
+        d3.max(data, (d) => {
+          //@ts-ignore
+          return isCase ? +d.cases : d.deaths;
+        }),
+      ])
+      .range([4, width]);
 
     svg
       .append("g")
       .attr("class", "x-axis")
-      .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
-
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", `translate(0, ${height})`)
       .call(d3.axisBottom(x));
-    svg
-      .append("g")
-      .attr("class", "y-axis")
-      .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
-      .call(d3.axisLeft(y).ticks(17));
-    var opacityrange = d3
-      .scaleLinear()
-      .domain([0, Math.max(...dataset.map(({ cases }) => cases))])
-      .range([0.5, 1]);
-    svg
-      .selectAll("rect")
-      .data(dataset)
+
+    let y = d3
+      .scaleBand()
+      .range([0, height])
+      //@ts-ignore
+      .domain(data.map((d) => d.country))
+      .padding(0.1);
+
+    svg.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
+
+    const bars = svg.selectAll("rect").data(data);
+
+    bars
       .enter()
       .append("rect")
+      .attr("x", x(0))
+      //@ts-ignore
+      .attr("y", (d) => y(d.country))
+      .attr("width", 0)
+      .attr("height", y.bandwidth())
+      .attr("fill", isCase ? "steelblue" : "red")
+      .attr("transform", "translate(0, 0)")
       .transition()
-      .delay(function (d, i) {
-        return i * 500;
-      })
-      .duration(1000)
-      // @ts-ignore
-      .attr("x", function (d, i) {
-        // @ts-ignore
-        return xScale(i);
-      })
-      .attr("y", function (d) {
-        return height - yScale(d.cases);
-      })
-      .attr("width", xScale.bandwidth())
-      .attr("height", function (d) {
-        return yScale(d.cases);
-      })
-      .attr("fill", "#55165e")
-      .style("opacity", function (d) {
-        return opacityrange(d.cases);
-      });
-    svg
-      .selectAll("rect")
-      .on("mouseover", (event, d) => {
-        // @ts-ignore
-        // prettier-ignore
-        setTooltipContent(<ToolTipContainer cases={d.cases} country={d.country} todayCases={d.todayCases} deaths={d.deaths} flag={d.countryInfo.flag} casesPerOneMillion={d.casesPerOneMillion}/>)
-      })
-      .on("mouseleave", (d) => {
-        setTooltipContent("");
-      });
+      .duration(500)
+      //@ts-ignore
+      .attr("width", (d) => x(isCase ? +d.cases : d.deaths));
+
+    bars.exit().transition().duration(500).attr("width", 0).remove();
+    //@ts-ignore
+    bars
+      .transition()
+      .duration(500)
+      .attr("x", x(0))
+      //@ts-ignore
+      .attr("y", (d) => y(d.country))
+      //@ts-ignore
+      .attr("width", (d) => x(isCase ? +d.cases : d.deaths))
+      .attr("height", y.bandwidth());
 
     svg
-      .selectAll("text")
-      .data(dataset)
+      .selectAll(".bar-label")
+      .data(data)
       .enter()
       .append("text")
-      .text(function (d) {
-        return d.cases;
-      })
-      .attr("x", function (d, i) {
-        //@ts-ignore
-        return xScale(i) + xScale.bandwidth() / 2;
-      })
-      .attr("y", function (d) {
-        return height - yScale(d.cases) - 5;
-      })
-      .attr("font-family", "sans-serif")
-      .attr("font-size", "11px")
-      .attr("fill", "black")
-      .attr("text-anchor", "middle");
+      .attr("class", "bar-label")
+      .attr("x", (d: any) => x(isCase ? +d.cases : d.deaths) + 15)
+      //@ts-ignore
+      .attr("y", (d: any) => y(d.country) + y.bandwidth() / 2)
+      .attr("dy", "0.35em")
+      .text((d: any) => (isCase ? d.cases + " cases" : d.deaths + " deaths"))
+      .style("font-size", "16px")
+      .style("fill", "black");
+  };
+  const handleChange = (e: any) => {
+    if (e.target.value === "case") {
+      setIsCase(true);
+      setIsDeath(false);
+    }
+    if (e.target.value === "death") {
+      setIsCase(false);
+      setIsDeath(true);
+    }
+  };
+  const handleSorting = (e: any) => {
+    if (e.target.value === "ascending") {
+      setData(
+        data.sort((a: any, b: any) =>
+          isCase ? a.cases - b.cases : a.deaths - b.deaths
+        )
+      );
+      setIsAscending(true);
+      setIsDescending(false);
+      setIsAlphabetical(false);
+    }
+    if (e.target.value === "descending") {
+      setData(
+        data.sort((a: any, b: any) =>
+          isCase ? b.cases - a.cases : b.deaths - a.deaths
+        )
+      );
+      setIsAscending(false);
+      setIsDescending(true);
+      setIsAlphabetical(false);
+    }
+
+    if (e.target.value === "alphabetical ") {
+      setIsAscending(false);
+      setIsDescending(false);
+      setIsAlphabetical(true);
+
+      const sortedNames = data.sort((a: any, b: any) =>
+        a.country.localeCompare(b.country)
+      );
+
+      setData(sortedNames);
+    }
   };
   return (
     <div>
-      <Tooltip float anchorId="bar-chart" content={content} />
-      <h3> Barchart</h3>
-      <p>Choose list countries to display </p>
-      <MultiSelect
-        className="select"
-        options={countries}
-        value={choice}
-        onChange={setChoice}
-        labelledBy="Select"
-      />
-
-      <div id="bar-chart" />
+      <div>
+        <FormControl
+          sx={{
+            marginLeft: "80px",
+            height: "40px",
+            marginTop: "80px",
+            width: "200px",
+            marginBot: "20px",
+          }}
+        >
+          <InputLabel>Type Of Data</InputLabel>
+          <Select
+            id="data-type-select"
+            label="Age"
+            onChange={(e) => handleChange(e)}
+          >
+            <MenuItem value={"case"}>Cases</MenuItem>
+            <MenuItem value={"death"}>Deaths</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl
+          sx={{
+            marginLeft: "40px",
+            height: "40px",
+            marginTop: "80px",
+            width: "200px",
+          }}
+        >
+          <InputLabel>Sorting</InputLabel>
+          <Select
+            id="sort-select"
+            // value={age}
+            label="Age"
+            onChange={(e) => handleSorting(e)}
+          >
+            <MenuItem value={"ascending"}>Ascending</MenuItem>
+            <MenuItem value={"descending"}>Descending</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl
+          sx={{
+            marginLeft: "40px",
+            height: "40px",
+            marginTop: "80px",
+            width: "200px",
+          }}
+        >
+          <InputLabel>Select Country</InputLabel>
+          <Select
+            id="select-country"
+            // value={age}
+            label="Age"
+            onChange={(e) => updateData(e.target.value)}
+          >
+            {dataset.map((element: any) => (
+              <MenuItem value={element.country}>{element.country}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button
+          variant="outlined"
+          sx={{
+            marginLeft: "40px",
+            height: "56px",
+            marginTop: "80px",
+            width: "200px",
+          }}
+          onClick={() => setData([])}
+        >
+          Delete All
+        </Button>
+        <div className="country-tags-container">
+          {data.map((element: any) => (
+            <span className="country-tag">
+              <p>{element.country}</p>
+              <button onClick={() => handleRemoveCountry(element.country)}>
+                X
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
+      <div id="bar_chart"></div>
     </div>
   );
 };
 
-export default BarChart;
+export default BarChartTest;

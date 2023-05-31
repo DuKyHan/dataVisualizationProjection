@@ -7,8 +7,8 @@ import axios from "axios";
 
 interface lineChartType {
   payload: {};
-  seletedCountries: [];
-  selectedCountry: string;
+  seletedCountries: string;
+  selectedCountry: {};
   isLoading: boolean;
   isLoadingCompare: boolean;
   isError: SerializedError;
@@ -18,8 +18,8 @@ interface lineChartType {
 const initialState: lineChartType = {
   payload: [],
   payloadCompare: [],
-  seletedCountries: [],
-  selectedCountry: "",
+  seletedCountries: "",
+  selectedCountry: {},
   isLoadingCompare: false,
   isLoading: false,
   isError: "" as SerializedError,

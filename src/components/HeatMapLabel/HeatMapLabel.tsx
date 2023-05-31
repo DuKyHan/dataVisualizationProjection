@@ -9,14 +9,14 @@ const HeatMapLabel = () => {
           {" "}
           <div
             className="color-level-box"
-            style={{ backgroundColor: "#710909" }}
+            style={{ backgroundColor: "#ff0000" }}
           />
           <span>{">"} 300000</span>
         </li>
         <li>
           <div
             className="color-level-box"
-            style={{ backgroundColor: "#ff0000" }}
+            style={{ backgroundColor: "#710909" }}
           />
           <span>200000 - 300000</span>
         </li>
